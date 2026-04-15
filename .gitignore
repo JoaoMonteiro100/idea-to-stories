@@ -1,0 +1,14 @@
+# Packaged skill binary — use GitHub Releases for distribution
+*.skill
+
+# macOS
+.DS_Store
+
+# Eval outputs and session files
+outputs/
+*.jsonl
+iteration-*/
+
+# Editor
+.vscode/
+.idea/
