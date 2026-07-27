@@ -54,18 +54,19 @@ It helps to keep three dials separate:
 
 | Dial | The question it answers | Values |
 |---|---|---|
-| **command** | How far through the pipeline? | `run_pipeline` (all) · `discover` (0–1) · `specify` (2–3) · `generate_stories` (4) · `review` |
-| `output_mode` | How deep? | `summary` · `standard` · `full` |
+| **command** | How far through the pipeline? | `run_pipeline` (all) · `discover` (0–1) · `specify` (2–3) · `generate_stories` (4) · `quick` (straight to stories) · `review` |
+| `depth` | How much analysis? | `auto` (default) · `simple` · `standard` · `complex` |
+| `detail` | How much of it is written up? | `standard` · `full` |
 | `audience` | Who is it written for? | `product` · `design` · `engineering` · `cross_functional` |
 | `strictness` | How hard does it push back on vague input? | `light` · `standard` · `strict` |
 | `format` | What is it rendered as? | `markdown` · `json` · `notion` · `jira` |
 
 Two things worth knowing up front:
 
-- **`output_mode=summary` is the only parameter that skips work** — it jumps straight to stories and tags them `[UNVALIDATED]`. Everything else changes presentation, not scope.
+- **`depth` scales the work; `detail` scales the write-up** — `depth=complex` does more analysis, `detail=full` just explains it more. To skip the analysis entirely and get a rough backlog fast, use the **`quick` command** (stories tagged `[UNVALIDATED]`) — skipping work is a scope choice, not a detail level. And `depth` defaults to `auto`, so you rarely set it unless you want to override the auto-detect.
 - **`strictness` never hides a problem** — even `light` surfaces every issue; it only changes tone and whether it blocks.
 
-The short version to hold in your head: *command = how far through the pipeline · `output_mode` = how deep · `audience` = who it's for · `strictness` = how much it argues with you · `format` = how it's rendered.*
+The short version to hold in your head: *command = how far through the pipeline · `depth` = how much analysis · `detail` = how much of it is written up · `audience` = who it's for · `strictness` = how much it argues with you · `format` = how it's rendered.*
 
 ```
 #                 how far           who for            how strict       rendered as
@@ -85,6 +86,7 @@ If you don't type a command, the skill infers one from what you give it (a raw i
 | `specify` | Phases 2–3: domain model, use cases, typed requirements |
 | `generate_stories` | Phase 4: stories with INVEST validation and Gherkin acceptance criteria |
 | `run_pipeline` | Full run: Phases 0 → 4 |
+| `quick` | Fast path: skips to Phase 4 stories from a raw idea, tagged `[UNVALIDATED]`. The "I know the risks" mode |
 | `review` | Critiques existing stories against INVEST, Gherkin quality, and traceability |
 
 If you don't specify a command, the skill infers the right mode from what you provide.
@@ -95,12 +97,19 @@ If you don't specify a command, the skill infers the right mode from what you pr
 
 Parameters can be appended to any command: `parameter=value`
 
-### `output_mode`
+### `depth` — how much analysis
 | Value | Description |
 |---|---|
-| `summary` | Fast, condensed. Stories tagged `[UNVALIDATED]`. Alias: `--fast` |
-| `standard` | Default |
-| `full` | Extended output with rationale, confidence levels, and methodology notes |
+| `auto` | Default. Infers Simple / Standard / Complex from the idea |
+| `simple` | A few stakeholders, no journey map, a handful of requirements and stories |
+| `standard` | Full phases; one journey map (primary persona) + friction summaries for the rest |
+| `complex` | Full depth: journey map per persona, ASRs, integration contracts, phased delivery |
+
+### `detail` — how much is written up
+| Value | Description |
+|---|---|
+| `standard` | Default. The artifacts, cleanly presented |
+| `full` | Adds rationale, confidence levels, proactive edge cases, and methodology notes |
 
 ### `audience`
 | Value | Description |
@@ -143,7 +152,7 @@ Parameters can be appended to any command: `parameter=value`
 /idea-to-stories review [stories] format=notion
 
 # Fast backlog when you know the risks
-/idea-to-stories run_pipeline [idea] output_mode=summary
+/idea-to-stories quick [idea]
 ```
 
 ---

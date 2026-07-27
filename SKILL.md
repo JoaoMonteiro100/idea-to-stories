@@ -24,8 +24,9 @@ All parts are optional. The skill handles freeform input and infers what to do f
 /idea-to-stories I want to build a reservation tool for restaurants
 /idea-to-stories run_pipeline Here's my idea: [...] audience=engineering format=notion
 /idea-to-stories discover Here's a rough idea: [...]
-/idea-to-stories specify [discovery output or problem + stakeholders] output_mode=full
+/idea-to-stories specify [discovery output or problem + stakeholders] detail=full depth=complex
 /idea-to-stories generate_stories [existing requirements] strictness=strict
+/idea-to-stories quick [rough idea]           # skip to stories fast (tagged [UNVALIDATED])
 /idea-to-stories review [existing stories]
 /idea-to-stories help
 ```
@@ -60,6 +61,9 @@ Runs Phase 4 only. Expects structured requirements as input. Before generating s
 ### `run_pipeline`
 Runs the full workflow: Phases 0 → 1 → 2 → 3 → 4. Default for raw ideas. Execution is interactive through Phase 1 — pauses for elicitation input before Phase 2.
 
+### `quick`
+Fast path: skips the upstream analysis and jumps straight to Phase 4, producing stories directly from the raw idea with every story tagged `[UNVALIDATED]` and an **Assumptions & Risks** block up front. This is the "I know the risks, just give me a starting backlog" mode — never the recommended path for anything that will be built without a second pass. Acknowledge it explicitly when used: "Running in quick mode — skipping upstream analysis; I'll document every assumption I make." Because Phases 0–3 are skipped, quick-mode stories have no use case or requirement to trace to — **`quick` is the one sanctioned exception to Hard Rule 1**, with the `[UNVALIDATED]` tag standing in for the missing traceability. (It replaces the old `output_mode=summary`: skipping work is a *scope* choice, so it lives with the commands, not with `detail`.)
+
 ### `review`
 Critiques existing user stories against INVEST criteria, Gherkin acceptance criteria quality, role specificity, and requirement traceability. Produces a structured critique for every failing story with concrete rewrites or split recommendations. Does not generate new stories unless the critique determines the input story should be split — in which case, provide the splits.
 
@@ -71,17 +75,27 @@ Parameters can be appended to any command in any order. Format: `parameter=value
 
 ---
 
-### `output_mode`
+### `depth`
 
-Controls depth and verbosity.
+How much *analysis* the skill does — the number of personas, use cases, and requirements, and whether ASRs and integration contracts get drawn out. Defaults to `auto`, which infers the right level from the idea. Override it when you know better than the auto-detect: a "simple-looking" idea that's actually gnarly, or an ambitious-sounding one that's really a single feature.
 
 | Value | Behavior |
 |---|---|
-| `summary` | Condensed. Phases abbreviated. Stories generated with minimal validation detail. Every story tagged `[UNVALIDATED]`. Output prefixed with an **Assumptions & Risks** block. Alias: `--fast`. |
-| `standard` | Default. Full phase execution at appropriate depth. |
-| `full` | Extended. Includes rationale for every structural decision. Documents confidence level for each assumption. Surfaces edge cases proactively. Includes methodology notes. Preferred for handoff-ready specs. |
+| `auto` | Default. Infer Simple / Standard / Complex from the idea (see Depth Calibration). |
+| `simple` | Single feature, low risk: a few stakeholders, no journey map, a handful of requirements and 2–5 stories. |
+| `standard` | Multi-feature area: full phases; one journey map for the primary persona, friction summaries for the rest. |
+| `complex` | System-wide / integrated / regulated: full depth, a journey map per primary persona, ASRs with architectural implications, integration contracts, phased delivery. |
 
-`summary` mode is never the recommended path — it exists so the user can choose it knowingly. When running in `summary` mode, acknowledge it explicitly: "Running in summary mode — skipping upstream analysis. I'll document every assumption I make."
+### `detail`
+
+How much of that analysis is *written up* — rationale, confidence levels, methodology notes. This changes the prose, not how much work is done. (Contrast with `depth`, which changes the work itself: `depth` = how much analysis; `detail` = how much of it you explain.)
+
+| Value | Behavior |
+|---|---|
+| `standard` | Default. The artifacts, cleanly presented. |
+| `full` | Adds rationale for every structural decision, a confidence level per assumption, proactively surfaced edge cases, and methodology notes. Preferred for handoff-ready specs. |
+
+> To skip the analysis entirely and just get a rough backlog fast, use the `quick` **command** — not a `detail` level. Skipping work is a scope choice, so it lives with the commands.
 
 ---
 
@@ -91,7 +105,7 @@ Changes what gets emphasized and how output is framed. Does not change which pha
 
 | Value | Behavior |
 |---|---|
-| `product` | Lead with Problem Statement and Business Requirements. Prominently feature MoSCoW prioritization and stakeholder impact. Business value emphasized in every story. ASRs mentioned but not elaborated technically. Acceptance criteria written in outcome language over technical precision — but when combined with `output_mode=full`, edge cases are still surfaced, phrased as user impact rather than technical detail. |
+| `product` | Lead with Problem Statement and Business Requirements. Prominently feature MoSCoW prioritization and stakeholder impact. Business value emphasized in every story. ASRs mentioned but not elaborated technically. Acceptance criteria written in outcome language over technical precision — but when combined with `detail=full`, edge cases are still surfaced, phrased as user impact rather than technical detail. |
 | `design` | Lead with stakeholder map and user flows. Emphasize empty states, first-time vs. returning user distinctions, error states, and edge cases. Each story gets a **UX Considerations** callout: what the design must account for. Use case alternative and exception flows given extra depth. |
 | `engineering` | Lead with Functional Requirements, Constraints, and ASRs. Include architectural implication notes in relevant stories. Acceptance criteria are technically precise: include boundary values, state transitions, and system behavior under failure. Integration contracts specified at system boundary. Stories include an **Implementation Notes** callout where architectural guidance is needed. |
 | `cross_functional` | Balanced output. No particular emphasis. Default. |
@@ -135,10 +149,11 @@ When `format=json`, output a single JSON object matching this schema. Omit phase
 {
   "skill": "idea-to-stories",
   "metadata": {
-    "mode": "run_pipeline | discover | specify | generate_stories | review | targeted",
+    "mode": "run_pipeline | quick | discover | specify | generate_stories | review | targeted",
     "phases_executed": ["0", "1", "2", "3", "4"],
     "audience": "product | design | engineering | cross_functional",
-    "output_mode": "summary | standard | full",
+    "depth": "auto | simple | standard | complex",
+    "detail": "standard | full",
     "strictness": "light | standard | strict"
   },
   "problem_statement": {
@@ -352,7 +367,7 @@ Stories that skip this chain produce software that's technically correct and sol
 
 ## Depth Calibration
 
-Not every idea needs the same depth. Calibrate automatically:
+When `depth=auto` (the default) the skill infers the tier from the idea; set `depth=simple|standard|complex` to override it. The tiers:
 
 **Simple** (single feature, clear scope, low risk — e.g. "add a search bar to my app"):
 - Phase 0: 3–4 sentences
@@ -792,7 +807,6 @@ When no explicit command is given, identify which phases to execute based on wha
 | Requirements exist, need stories | Stories (`generate_stories`) | Audit 2–3, then 4 | Batch |
 | Stories need critique | Review (`review`) | INVEST + Gherkin + traceability | Batch |
 | Specific phase requested | Targeted | That phase only | Match to phase type |
-| `output_mode=summary` or `--fast` | Summary | 4 only | Batch with `[UNVALIDATED]` tags |
 
 Explicit commands always override mode detection.
 
@@ -845,7 +859,7 @@ This applies at both the FR level and in story acceptance criteria.
 
 ## Hard Rules
 
-1. Never write a story without a traceability reference to a use case and a requirement.
+1. Never write a story without a traceability reference to a use case and a requirement — the sole exception is `quick` mode, which skips those phases and substitutes the `[UNVALIDATED]` tag.
 2. Never write acceptance criteria in prose — always Gherkin.
 3. Never accept a quality requirement without a measurable response measure.
 4. Never silently resolve a conflict between requirements — surface it.

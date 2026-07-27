@@ -4,6 +4,26 @@ All notable changes to `idea-to-stories` are documented here.
 
 ---
 
+## v3.0.0 — July 2026
+
+**Breaking:** parameter redesign for clarity. v2 parameter names are not accepted (clean break).
+
+### Why
+`output_mode` (summary/standard/full) and the automatic depth calibration (Simple/Standard/Complex) were two overlapping "how much" concepts, which made the API confusing. They're now cleanly separated.
+
+### Changed
+- **`output_mode` split into two dials:**
+  - **`depth`** (`auto` default · `simple` · `standard` · `complex`) — how much *analysis* is done (personas, use cases, ASRs, integration contracts). Now **user-overridable**; previously depth was automatic-only.
+  - **`detail`** (`standard` · `full`) — how much of that analysis is *written up* (rationale, confidence, methodology notes).
+- **`output_mode=summary` / `--fast` removed**, replaced by a new **`quick` command** — skipping the pipeline is a scope choice, so it belongs with the commands, not a detail level.
+
+### Migration from v2
+- `output_mode=full` → `detail=full`
+- `output_mode=summary` (or `--fast`) → the `quick` command
+- Depth is now settable directly: `depth=simple|standard|complex` (or leave it `auto`)
+
+---
+
 ## v2.1.0 — July 2026
 
 Refinements from a full evaluation run of the pipeline.
