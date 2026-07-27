@@ -44,6 +44,38 @@ Claude Code looks for skills in `~/.claude/skills/` (personal) and `.claude/skil
 
 ---
 
+## How it works
+
+It helps to keep three dials separate:
+
+- **The command decides *which phases run*** — how far through the pipeline you go.
+- **Parameters decide *how the output looks and behaves*** — they mostly don't change what runs.
+- **Depth is automatic** — the skill sizes the work (Simple / Standard / Complex) to the idea.
+
+| Dial | The question it answers | Values |
+|---|---|---|
+| **command** | How far through the pipeline? | `run_pipeline` (all) · `discover` (0–1) · `specify` (2–3) · `generate_stories` (4) · `review` |
+| `output_mode` | How deep? | `summary` · `standard` · `full` |
+| `audience` | Who is it written for? | `product` · `design` · `engineering` · `cross_functional` |
+| `strictness` | How hard does it push back on vague input? | `light` · `standard` · `strict` |
+| `format` | What is it rendered as? | `markdown` · `json` · `notion` · `jira` |
+
+Two things worth knowing up front:
+
+- **`output_mode=summary` is the only parameter that skips work** — it jumps straight to stories and tags them `[UNVALIDATED]`. Everything else changes presentation, not scope.
+- **`strictness` never hides a problem** — even `light` surfaces every issue; it only changes tone and whether it blocks.
+
+The short version to hold in your head: *command = how far through the pipeline · `output_mode` = how deep · `audience` = who it's for · `strictness` = how much it argues with you · `format` = how it's rendered.*
+
+```
+#                 how far           who for            how strict       rendered as
+/idea-to-stories generate_stories [requirements] audience=engineering strictness=strict format=jira
+```
+
+If you don't type a command, the skill infers one from what you give it (a raw idea → full run; pasted requirements → stories; pasted stories + "what's wrong?" → review). An explicit command always wins.
+
+---
+
 ## Commands
 
 | Command | What it does |
