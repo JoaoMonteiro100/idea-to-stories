@@ -91,7 +91,7 @@ Changes what gets emphasized and how output is framed. Does not change which pha
 
 | Value | Behavior |
 |---|---|
-| `product` | Lead with Problem Statement and Business Requirements. Prominently feature MoSCoW prioritization and stakeholder impact. Business value emphasized in every story. ASRs mentioned but not elaborated technically. Acceptance criteria written in outcome language over technical precision. |
+| `product` | Lead with Problem Statement and Business Requirements. Prominently feature MoSCoW prioritization and stakeholder impact. Business value emphasized in every story. ASRs mentioned but not elaborated technically. Acceptance criteria written in outcome language over technical precision — but when combined with `output_mode=full`, edge cases are still surfaced, phrased as user impact rather than technical detail. |
 | `design` | Lead with stakeholder map and user flows. Emphasize empty states, first-time vs. returning user distinctions, error states, and edge cases. Each story gets a **UX Considerations** callout: what the design must account for. Use case alternative and exception flows given extra depth. |
 | `engineering` | Lead with Functional Requirements, Constraints, and ASRs. Include architectural implication notes in relevant stories. Acceptance criteria are technically precise: include boundary values, state transitions, and system behavior under failure. Integration contracts specified at system boundary. Stories include an **Implementation Notes** callout where architectural guidance is needed. |
 | `cross_functional` | Balanced output. No particular emphasis. Default. |
@@ -135,7 +135,7 @@ When `format=json`, output a single JSON object matching this schema. Omit phase
 {
   "skill": "idea-to-stories",
   "metadata": {
-    "mode": "full_run | discover | specify | stories | review | targeted",
+    "mode": "run_pipeline | discover | specify | generate_stories | review | targeted",
     "phases_executed": ["0", "1", "2", "3", "4"],
     "audience": "product | design | engineering | cross_functional",
     "output_mode": "summary | standard | full",
@@ -356,16 +356,16 @@ Not every idea needs the same depth. Calibrate automatically:
 
 **Simple** (single feature, clear scope, low risk — e.g. "add a search bar to my app"):
 - Phase 0: 3–4 sentences
-- Phase 1: 2–3 stakeholders, no formal conflict section unless one is obvious
+- Phase 1: 2–3 stakeholders; a persona only if a genuinely distinct user type matters; no journey map; no formal conflict section unless one is obvious
 - Phase 2: Glossary (5–8 terms), 1–2 use cases, no full entity model needed
 - Phase 3: 3–5 requirements per type, 1–2 QR scenarios
 - Phase 4: 2–5 stories
 
 **Standard** (multi-feature product area, moderate complexity — e.g. "reservation system for a restaurant"):
-- All phases at full depth
+- All phases at full depth, with one deliberate economy in Phase 1: write a persona per primary user type, but produce a full **journey map for the single most important persona only** — a one- or two-line friction summary is enough for the others. Three full "who and how" artifacts for every persona is more upfront ceremony than a Standard idea needs; spend the effort on the primary path.
 
 **Complex** (system-wide, cross-cutting concerns, multiple integrations, regulatory constraints):
-- All phases at full depth, plus explicit architectural implications per ASR, explicit integration contracts per integration point, and a phased delivery recommendation
+- All phases at full depth — including a full journey map per primary persona — plus explicit architectural implications per ASR, explicit integration contracts per integration point, and a phased delivery recommendation
 
 When in doubt, start Standard and trim. Do not start Simple and inflate.
 
@@ -446,9 +446,11 @@ What success looks like: [What "better" means to this person specifically — no
 Elicitation status: [Based on research / Assumed / Needs validation]
 ```
 
-**Output — Journey Maps (one per primary persona):**
+**Output — Journey Maps (how many depends on depth — see the calibration note below):**
 
 A journey map traces a persona's experience through a specific scenario end to end. It makes the friction visible before a single requirement is written. Map the current state (how it works today), not the future state. The gap between current and desired state is where requirements come from.
+
+**Calibrate by depth (see Depth Calibration):** at Complex, map every primary persona; at Standard, map only the single most important persona and give a one- or two-line friction summary for the rest; at Simple, skip journey maps. Don't produce a full five-stage map per persona for an idea that doesn't warrant it. If two user types are genuinely co-primary (e.g. a two-sided flow like guest + staff), map the higher-risk or higher-uncertainty one first — or both, if the second map genuinely earns its keep.
 
 ```
 ### Journey Map: [Persona Name] — [Goal / Scenario]
@@ -825,7 +827,7 @@ Apply throughout — not just at validation checkpoints:
 - **INVEST violations**: Flag and resolve before outputting.
 - **Assumed personas or journey map entries**: Flag with `[ASSUMED]` and add to Elicitation Gap List.
 
-`strictness` modifies tone and blocking behavior — but never suppresses flagging. Even at `light`, every violation is surfaced.
+(Every item above is surfaced at all `strictness` levels — see the `strictness` parameter for how strictness changes tone and blocking, never whether a violation is flagged.)
 
 ---
 
@@ -857,4 +859,4 @@ This applies at both the FR level and in story acceptance criteria.
 12. Never output `format=json` with missing required schema fields — use `null` for absent values, never omit keys.
 13. Never run `generate_stories` without first auditing for domain glossary, system boundary, and use case completeness — even if the user provides requirements directly.
 14. Never write a persona without grounding it in provided context or explicitly labeling it `[ASSUMED — validate with research]`.
-15. Never skip journey mapping for primary end-user personas in `discover` or `run_pipeline` mode — it is how friction becomes visible before requirements are written.
+15. In `discover` or `run_pipeline` mode, always journey-map the **primary** persona before writing requirements — it is how friction becomes visible. Depth calibrates the rest: every primary persona at Complex, the single most important one at Standard, none at Simple.

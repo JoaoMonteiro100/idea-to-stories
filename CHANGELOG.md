@@ -4,6 +4,21 @@ All notable changes to `idea-to-stories` are documented here.
 
 ---
 
+## v2.1.0 — July 2026
+
+Refinements from a full evaluation run of the pipeline.
+
+### Changed
+- **Lighter Phase 1 at Standard depth**: journey-map the single most important persona (with a one- or two-line friction summary for the rest) instead of a full five-stage map per persona. Complex depth still maps every primary persona; Simple skips journey maps entirely. Removes upfront ceremony where it wasn't earning its keep.
+
+### Fixed
+- Corrected the `format=json` metadata `mode` enum to match the actual command names (`run_pipeline`, `generate_stories` — was `full_run`, `stories`).
+- Resolved a tension between `output_mode=full` and `audience=product`: edge cases are still surfaced under `full`, phrased as user impact rather than dropped.
+- De-duplicated the "strictness only changes tone, never suppresses a flag" rule — stated once as canonical, cross-referenced elsewhere.
+- Fixed the README: accurate repo structure, and working clone-and-copy install instructions (previously pointed to a release that doesn't exist).
+
+---
+
 ## v2.0.0 — April 2026
 
 Complete rewrite from the ground up. v1 was a structured template with requirements vocabulary. v2 is a requirements engineering process.

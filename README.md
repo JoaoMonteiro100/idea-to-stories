@@ -32,7 +32,15 @@ Phases can be run individually or as a full pipeline. The skill detects what you
 
 ## Installation
 
-Download `idea-to-stories-skill.skill` from [Releases](../../releases) and install it in your Claude workspace.
+Skills are plain folders. Clone the repo and copy the skill into your Claude skills directory:
+
+```bash
+git clone https://github.com/JoaoMonteiro100/idea-to-stories.git
+mkdir -p ~/.claude/skills/idea-to-stories
+cp idea-to-stories/SKILL.md ~/.claude/skills/idea-to-stories/
+```
+
+Claude Code looks for skills in `~/.claude/skills/` (personal) and `.claude/skills/` (per-project). Once installed, invoke it with `/idea-to-stories`, or just describe your idea and let it trigger.
 
 ---
 
@@ -150,12 +158,21 @@ Nothing in Phase 4 exists without a path back to Phase 0.
 /
 ├── README.md
 ├── CHANGELOG.md
+├── LICENSE
 ├── .gitignore
-├── idea-to-stories-skill/
-│   └── SKILL.md          # The skill definition
-└── evals/
-    └── evals.json        # Eval test cases and assertions
+└── SKILL.md          # The skill definition
 ```
+
+---
+
+## Related
+
+Part of a broader family of UX & product-design skills for Claude — see the
+[**ux-design-skills**](https://github.com/JoaoMonteiro100/ux-design-skills)
+collection (usability testing, heuristic & accessibility audits, personas,
+competitive analysis, inclusive design, and visual-design fundamentals).
+`idea-to-stories` is the standalone, in-depth requirements-engineering member of
+that family.
 
 ---
 
