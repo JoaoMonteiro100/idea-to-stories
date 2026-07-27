@@ -16,10 +16,17 @@ All notable changes to `idea-to-stories` are documented here.
   - **`depth`** (`auto` default · `simple` · `standard` · `complex`) — how much *analysis* is done (personas, use cases, ASRs, integration contracts). Now **user-overridable**; previously depth was automatic-only.
   - **`detail`** (`standard` · `full`) — how much of that analysis is *written up* (rationale, confidence, methodology notes).
 - **`output_mode=summary` / `--fast` removed**, replaced by a new **`quick` command** — skipping the pipeline is a scope choice, so it belongs with the commands, not a detail level.
+- **Commands renamed for consistency:** `run_pipeline` → `run`, `generate_stories` → `stories`. All commands are now single tokens: `discover`, `specify`, `stories`, `run`, `quick`, `review`, `help`.
+
+### Added
+- **Interactive vs. batch execution** documented as a first-class concept (previously only referenced in passing).
+- The skill now **infers parameters from the user's phrasing** (e.g. "for my engineering team" → `audience=engineering`) and surfaces the tunable levers in one short line on first output, instead of interrogating up front or forcing a config questionnaire.
+- **`quick` named as the sole sanctioned exception to Hard Rule 1** — its stories carry `[UNVALIDATED]` in place of use-case/requirement traceability.
 
 ### Migration from v2
 - `output_mode=full` → `detail=full`
 - `output_mode=summary` (or `--fast`) → the `quick` command
+- `run_pipeline` → `run`; `generate_stories` → `stories`
 - Depth is now settable directly: `depth=simple|standard|complex` (or leave it `auto`)
 
 ---

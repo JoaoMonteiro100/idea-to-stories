@@ -22,10 +22,10 @@ All parts are optional. The skill handles freeform input and infers what to do f
 **Examples:**
 ```
 /idea-to-stories I want to build a reservation tool for restaurants
-/idea-to-stories run_pipeline Here's my idea: [...] audience=engineering format=notion
+/idea-to-stories run Here's my idea: [...] audience=engineering format=notion
 /idea-to-stories discover Here's a rough idea: [...]
 /idea-to-stories specify [discovery output or problem + stakeholders] detail=full depth=complex
-/idea-to-stories generate_stories [existing requirements] strictness=strict
+/idea-to-stories stories [existing requirements] strictness=strict
 /idea-to-stories quick [rough idea]           # skip to stories fast (tagged [UNVALIDATED])
 /idea-to-stories review [existing stories]
 /idea-to-stories help
@@ -35,6 +35,11 @@ All parts are optional. The skill handles freeform input and infers what to do f
 - If a command is explicitly given, execute it.
 - If no command is given but input is present, use mode detection (see Mode Detection section).
 - If nothing is provided after `/idea-to-stories`, say who you are in one sentence, then ask: "What's the idea or problem you want to work through?"
+- **Don't interrogate the user for parameters.** Every one has a sensible default (`depth=auto`, `detail=standard`, `audience=cross_functional`, `strictness=standard`, `format=markdown`), so start with those rather than opening with a configuration questionnaire — that fights the "get to work" ethos. Do two lighter things instead:
+  - **Infer parameters from the user's own words.** "for my engineering team" → `audience=engineering`; "just a rough backlog" → the `quick` command; "handoff-ready" / "for external stakeholders" → `detail=full` + `strictness=strict`; "big regulated system" → `depth=complex`.
+  - **On your first substantive output, add one short line** noting the active defaults and that they're tunable — e.g. *"(Running at auto depth, cross-functional, standard detail — say the word to tune depth / audience / strictness / format.)"* One line, after you've started delivering value; never a blocking prompt before any output.
+
+**Interactive vs. batch execution:** By default, `run` and `discover` are **interactive** — they pause after Phase 1 to ask elicitation questions before building a domain model, so you don't invent structure from a paragraph. Switch to **batch** (the whole thing produced in one pass) when the user asks for it ("give me the full thing", "don't stop to ask"), when they've already supplied enough context to proceed, or when the environment can't take follow-up input (an automated or non-interactive run). In batch, never stop for questions — make the best assumptions, label each one `[ASSUMED]`, and list them in the Elicitation Gap List so nothing is silently invented.
 
 Do not run a lengthy preamble. The user wants to get to work.
 
@@ -55,10 +60,10 @@ Runs Phases 0–1: problem framing, stakeholder identification, personas, and jo
 ### `specify`
 Runs Phases 2–3: domain modeling, use cases, and requirements engineering. Takes discovery output (or existing problem/stakeholder context) as input. Before starting, audits the input for completeness and flags gaps. Produces a Domain Glossary, Core Entities, System Boundary, Use Cases, and the full typed requirements set. Use after `discover`, or when discovery has already been done elsewhere.
 
-### `generate_stories`
+### `stories`
 Runs Phase 4 only. Expects structured requirements as input. Before generating stories, audits for domain glossary, system boundary, and use case completeness — flags every gap and documents assumptions before proceeding. If requirements are absent, ask for them before starting.
 
-### `run_pipeline`
+### `run`
 Runs the full workflow: Phases 0 → 1 → 2 → 3 → 4. Default for raw ideas. Execution is interactive through Phase 1 — pauses for elicitation input before Phase 2.
 
 ### `quick`
@@ -149,7 +154,7 @@ When `format=json`, output a single JSON object matching this schema. Omit phase
 {
   "skill": "idea-to-stories",
   "metadata": {
-    "mode": "run_pipeline | quick | discover | specify | generate_stories | review | targeted",
+    "mode": "run | quick | discover | specify | stories | review | targeted",
     "phases_executed": ["0", "1", "2", "3", "4"],
     "audience": "product | design | engineering | cross_functional",
     "depth": "auto | simple | standard | complex",
@@ -382,7 +387,7 @@ When `depth=auto` (the default) the skill infers the tier from the idea; set `de
 **Complex** (system-wide, cross-cutting concerns, multiple integrations, regulatory constraints):
 - All phases at full depth — including a full journey map per primary persona — plus explicit architectural implications per ASR, explicit integration contracts per integration point, and a phased delivery recommendation
 
-When in doubt, start Standard and trim. Do not start Simple and inflate.
+When in doubt, start Standard and trim. Do not start Simple and inflate. If an idea is mostly Standard but has one genuinely Complex subsystem (e.g. a routing or recommendation engine), stay at the lower tier and **elevate that subsystem** — flag it as an ASR and give it the depth it needs — rather than inflating the whole run to Complex.
 
 ---
 
@@ -801,16 +806,16 @@ When no explicit command is given, identify which phases to execute based on wha
 
 | Input | Inferred mode | Phases | Interaction style |
 |---|---|---|---|
-| Raw idea, nothing structured | Full run (`run_pipeline`) | 0 → 1 → pause → 2 → 3 → 4 | Interactive: pause after Phase 1 |
+| Raw idea, nothing structured | Full run (`run`) | 0 → 1 → pause → 2 → 3 → 4 | Interactive: pause after Phase 1 |
 | Rough idea, want to explore first | Discovery (`discover`) | 0 → 1 | Interactive throughout |
 | Discovery done, need requirements | Specification (`specify`) | 2 → 3 | Batch, with gap audit first |
-| Requirements exist, need stories | Stories (`generate_stories`) | Audit 2–3, then 4 | Batch |
+| Requirements exist, need stories | Stories (`stories`) | Audit 2–3, then 4 | Batch |
 | Stories need critique | Review (`review`) | INVEST + Gherkin + traceability | Batch |
 | Specific phase requested | Targeted | That phase only | Match to phase type |
 
 Explicit commands always override mode detection.
 
-**Full-run mode is always interactive through Phase 1.** After producing the Stakeholder Map, Personas, Journey Maps, and Elicitation Gaps, stop and wait for user input before building the domain model. The goal is to avoid inventing domain structure and requirements from a paragraph of input.
+**`run` and `discover` are interactive through Phase 1 by default — *unless* in batch mode** (see *Interactive vs. batch execution*). When interactive, after producing the Stakeholder Map, Personas, Journey Maps, and Elicitation Gaps, stop and wait for user input before building the domain model — this avoids inventing domain structure from a paragraph. But if the user asked for the whole thing at once, gave enough context, or the environment can't take a reply, **do not stop** — proceed in batch, labeling assumptions `[ASSUMED]`. If you're ever unsure whether you can get a reply, prefer batch over hanging.
 
 **When skipping phases at user request:** Never silently comply. State what's being skipped, what that means for quality, and mark every output that lacks upstream validation with `[UNVALIDATED — no use case / requirement backing this story]`.
 
@@ -871,6 +876,6 @@ This applies at both the FR level and in story acceptance criteria.
 10. Never use "user" or "admin" as a role in a story — use a specific stakeholder class from Phase 1.
 11. Never suppress a validation flag because of `strictness=light` — always flag, only adjust tone.
 12. Never output `format=json` with missing required schema fields — use `null` for absent values, never omit keys.
-13. Never run `generate_stories` without first auditing for domain glossary, system boundary, and use case completeness — even if the user provides requirements directly.
+13. Never run `stories` without first auditing for domain glossary, system boundary, and use case completeness — even if the user provides requirements directly.
 14. Never write a persona without grounding it in provided context or explicitly labeling it `[ASSUMED — validate with research]`.
-15. In `discover` or `run_pipeline` mode, always journey-map the **primary** persona before writing requirements — it is how friction becomes visible. Depth calibrates the rest: every primary persona at Complex, the single most important one at Standard, none at Simple.
+15. In `discover` or `run` mode, always journey-map the **primary** persona before writing requirements — it is how friction becomes visible. Depth calibrates the rest: every primary persona at Complex, the single most important one at Standard, none at Simple.

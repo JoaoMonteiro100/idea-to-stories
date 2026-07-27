@@ -50,11 +50,11 @@ It helps to keep three dials separate:
 
 - **The command decides *which phases run*** — how far through the pipeline you go.
 - **Parameters decide *how the output looks and behaves*** — they mostly don't change what runs.
-- **Depth is automatic** — the skill sizes the work (Simple / Standard / Complex) to the idea.
+- **Depth defaults to automatic** — the skill sizes the work (Simple / Standard / Complex) to the idea, and you can override it with `depth=`.
 
 | Dial | The question it answers | Values |
 |---|---|---|
-| **command** | How far through the pipeline? | `run_pipeline` (all) · `discover` (0–1) · `specify` (2–3) · `generate_stories` (4) · `quick` (straight to stories) · `review` |
+| **command** | How far through the pipeline? | `run` (all) · `discover` (0–1) · `specify` (2–3) · `stories` (4) · `quick` (straight to stories) · `review` |
 | `depth` | How much analysis? | `auto` (default) · `simple` · `standard` · `complex` |
 | `detail` | How much of it is written up? | `standard` · `full` |
 | `audience` | Who is it written for? | `product` · `design` · `engineering` · `cross_functional` |
@@ -70,7 +70,7 @@ The short version to hold in your head: *command = how far through the pipeline 
 
 ```
 #                 how far           who for            how strict       rendered as
-/idea-to-stories generate_stories [requirements] audience=engineering strictness=strict format=jira
+/idea-to-stories stories [requirements] audience=engineering strictness=strict format=jira
 ```
 
 If you don't type a command, the skill infers one from what you give it (a raw idea → full run; pasted requirements → stories; pasted stories + "what's wrong?" → review). An explicit command always wins.
@@ -84,8 +84,8 @@ If you don't type a command, the skill infers one from what you give it (a raw i
 | `help` | Lists all commands and parameters |
 | `discover` | Phases 0–1: problem framing, stakeholders, personas, journey maps |
 | `specify` | Phases 2–3: domain model, use cases, typed requirements |
-| `generate_stories` | Phase 4: stories with INVEST validation and Gherkin acceptance criteria |
-| `run_pipeline` | Full run: Phases 0 → 4 |
+| `stories` | Phase 4: stories with INVEST validation and Gherkin acceptance criteria |
+| `run` | Full run: Phases 0 → 4 |
 | `quick` | Fast path: skips to Phase 4 stories from a raw idea, tagged `[UNVALIDATED]`. The "I know the risks" mode |
 | `review` | Critiques existing stories against INVEST, Gherkin quality, and traceability |
 
@@ -146,7 +146,7 @@ Parameters can be appended to any command: `parameter=value`
 /idea-to-stories discover We're seeing high churn in our onboarding flow
 
 # Turn existing requirements into stories for an engineering audience
-/idea-to-stories generate_stories [requirements] audience=engineering strictness=strict
+/idea-to-stories stories [requirements] audience=engineering strictness=strict
 
 # Review stories before a sprint
 /idea-to-stories review [stories] format=notion
